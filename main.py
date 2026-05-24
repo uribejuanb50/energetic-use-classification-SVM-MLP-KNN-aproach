@@ -31,6 +31,8 @@ def main():
     train, evaluar, test = splitter.dividir_temporal(df, "date", MESES_ENTRENAMIENTO, MESES_EVALUACION)
     reporte = splitter.verificar_split(train, evaluar, test, "Load_Type", "date")
 
+    print(f"Reporte de los splits:\n{reporte}")
+
     #Separar los sets em caracteristicas y objetivos
     objetivo_train = train["Load_Type"]
     caractaristicas_train = train.drop(columns = ["date", "Load_Type"])
