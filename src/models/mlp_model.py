@@ -5,7 +5,7 @@ from pathlib import Path
 
 #keras es de tensorflow.keras, pero solo así no tira la fastidiosa advertencia JAJAJ
 from keras.models import Sequential, load_model
-from keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout, Input
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from sklearn.utils.class_weight import compute_class_weight
@@ -27,11 +27,9 @@ class MLPmodel(BaseModel):
     def _construir_modelo(self) -> Sequential:
         modelo = Sequential()
 
-        mi_zip = iter(zip(self.config["hidden_layers"], self.config["dropout"]) )
-        neuronas, dropout = next(mi_zip)
+        #modelo.add(Input(shape = self.n_features,))
 
-        modelo.add(Dense(neuronas, activation = "relu", input_shape = (self.n_features,)))
-        modelo.add(Dropout(dropout))
+        modelo.add(Input(shape=(self.n_features,)))
 
         for neuronas, dropout in zip(self.config["hidden_layers"], self.config["dropout"]) :
             modelo.add(Dense(neuronas, activation = "relu"))
@@ -52,7 +50,7 @@ class MLPmodel(BaseModel):
                                      classes = clases,
                                      y = y_train)
         
-        clases_con_pesos = zip(clases, pesos)
+        clases_con_pesos = dict(zip(clases, pesos))
 
         print(f"[Mlp_model] aquí claramente está cada clase con su peso jiji\n{clases_con_pesos}")
 
@@ -66,7 +64,7 @@ class MLPmodel(BaseModel):
                                                       min_lr = 1e-6,
                                                       verbose = 1)
         
-        data_evaluar = (x_evaluar, y_evaluar) if x_evaluar is None else None 
+        data_evaluar = (x_evaluar, y_evaluar) if x_evaluar is not None else None 
 
         history = self.model.fit(x_train,
                                  y_train,
@@ -79,18 +77,27 @@ class MLPmodel(BaseModel):
 
         self.history = history.history
 
-        print(f"[Mlp_model] Entrenamiento finalizado... Épocas efectivas: {len(self.history["loss"])} ")
+        print(f"[Mlp_model] Entrenamiento finalizado... Épocas efectivas: {len(self.history['loss'])} ")
         return  
     
     def predict(self, X) -> np.ndarray :
-        pass
+        probabilidades = self.model.predict(X, verbose = 0)
+        predicciones = np.argmax(probabilidades, axis = 1)
+        
+        return predicciones
 
     def predict_proba(self, X) -> np.ndarray :
-        pass
+        return self.model.predict(X, verbose = 0)
 
-    def save(self, path) :
-        pass
+    def save(self, path : Path) :
+        self.model.save(path)
+        print(f"[Mlp_model] salvado en {path}")
+
+        return
 
     def load(self, path) :
-        pass 
+        self.model = load_model(path) 
+        print(f"[Mlp] modelo cargado desde {path}")
+
+        return
              

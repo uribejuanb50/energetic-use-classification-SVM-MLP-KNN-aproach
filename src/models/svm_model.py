@@ -9,22 +9,23 @@ from src.config import SVM_GRIDSEARCH_SUBSAMPLE
 
 class SVMmodel(BaseModel) :
 
-    def __init__ (self, config : dict) :
+    def __init__ (self, config : dict, col_objetivo = "Load_Type") :
         self.svm_grid = config["SVM_GRID"]
         self.tam_subsampleo = config["tam_subsampleo"]
         self.semilla = config["semilla"]
+        self.col_objetivo = col_objetivo
 
         return 
     
-    def fit(self, x_train, y_train, col_objetivo , x_evaluar = None, y_evaluar = None) :
+    def fit(self, x_train, y_train, x_evaluar = None, y_evaluar = None) :
 
         if not isinstance(y_train, pd.Series):
 
-            y_train_copia = pd.Series(y_train, name=col_objetivo)
+            y_train_copia = pd.Series(y_train, name=self.col_objetivo)
 
         else:
             y_train_copia = y_train.copy()
-            y_train_copia.name = col_objetivo
+            y_train_copia.name = self.col_objetivo
 
         if not isinstance(x_train, pd.DataFrame):
             columnas_originales = getattr(x_train, "columns", None)
@@ -35,10 +36,10 @@ class SVMmodel(BaseModel) :
 
         df_train_temp = pd.concat([x_train_copia, y_train_copia], axis = 1)
 
-        train_submuestrado = submuestreo_estratificado(df_train_temp, col_objetivo, self.tam_subsampleo, self.semilla)
+        train_submuestrado = submuestreo_estratificado(df_train_temp, self.col_objetivo, self.tam_subsampleo, self.semilla)
 
-        objetivos_train_submuestreado = train_submuestrado[col_objetivo]
-        caracteristicas_train_submuestreado = train_submuestrado.drop(columns = [col_objetivo])
+        objetivos_train_submuestreado = train_submuestrado[self.col_objetivo]
+        caracteristicas_train_submuestreado = train_submuestrado.drop(columns = [self.col_objetivo])
 
         svm_base = SVC(class_weight = "balanced", random_state = self.semilla)
 

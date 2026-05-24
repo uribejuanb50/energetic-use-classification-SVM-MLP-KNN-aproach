@@ -32,6 +32,7 @@ steel_load_classification/
 │   └── metrics/                  # JSON/CSV con resultados (para reproducibilidad)
 ├── tests/
 │   └── test_preprocessing.py     # Mínimo: que el preprocesamiento no rompa con datos vacíos/atípicos
+├── models/
 ├── requirements.txt
 ├── README.md
 └── main.py
